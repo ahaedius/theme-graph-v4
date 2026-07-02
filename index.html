@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Theme Graph v4 — Opportunities</title>
+<style>
+:root{
+  --shadow:0 14px 34px rgba(15,23,42,.10);
+  --muted:#667085;
+  --core:#7c3aed;--place:#10b981;--labs:#3b82f6;
+  --hero:#f59e0b;--agency:#ef4444;--activation:#14b8a6;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#f8fbff,#f4f7fb);color:#172033}
+.app{max-width:1620px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 390px;gap:20px}
+.panel{background:#fff;border-radius:18px;box-shadow:var(--shadow)}
+.board{padding:18px;grid-row:1/3}
+.side{padding:18px;overflow-y:auto;max-height:900px}
+.actions{grid-column:1/-1;padding:18px}
+h1{margin:0 0 6px;font-size:22px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:12px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+button{border:none;background:#101828;color:#fff;padding:9px 13px;border-radius:10px;cursor:pointer;font-size:13px}
+button.sec{background:#eef2f7;color:#101828}
+.pillbar{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 10px}
+.pill{border:1px solid #d8dee9;background:#fff;color:#344054;padding:7px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.pill.on{background:#101828;color:#fff;border-color:#101828}
+svg{width:100%;height:850px;border:1px solid #e7edf5;border-radius:16px;
+  background:radial-gradient(circle at 50% 38%,rgba(124,58,237,.04),transparent 55%),linear-gradient(180deg,#fff,#fbfdff)}
+.edge{stroke:#a9b6ca;stroke-width:2.2;opacity:.85}
+.edge.dim{opacity:.1}
+.edge-lbl{font-size:11px;fill:#64748b;text-anchor:middle;pointer-events:none}
+.edge-lbl.dim{opacity:.1}
+.opp-edge{stroke-dasharray:5,3;stroke-width:1.5;opacity:.55}
+.opp-edge.dim{opacity:.07}
+.node circle{stroke:#122033;stroke-width:2}
+.node.dim{opacity:.13}
+.node text{fill:#fff;font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.score-bg{fill:#fff;stroke:#101828;stroke-width:1.5}
+.score-txt{fill:#101828;font-size:12px;font-weight:800;text-anchor:middle;dominant-baseline:middle}
+.opp-node{cursor:pointer}
+.opp-node.dim{opacity:.1}
+.tooltip{position:fixed;pointer-events:none;background:#101828;color:#fff;padding:10px 14px;border-radius:10px;
+  font-size:13px;max-width:290px;line-height:1.4;opacity:0;transform:translateY(4px);
+  transition:all .12s ease;box-shadow:var(--shadow);z-index:30}
+.nt-tag{background:#f59e0b;color:#000;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;display:inline-block;margin-bottom:5px}
+.ri{display:grid;grid-template-columns:28px 1fr;gap:9px;padding:10px 0;border-bottom:1px solid #eef2f7;cursor:pointer}
+.ri:last-child{border-bottom:none}
+.ri.on{background:#f8fafc;border-radius:12px;padding-left:8px;padding-right:8px}
+.rnum{width:26px;height:26px;border-radius:999px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.ri h3{margin:0 0 3px;font-size:14px}
+.ri p{margin:0;color:var(--muted);font-size:11px;line-height:1.3}
+.oi{display:grid;grid-template-columns:12px 1fr;gap:9px;padding:9px 0;border-bottom:1px solid #eef2f7;cursor:pointer;align-items:start}
+.oi:last-child{border-bottom:none}
+.oi.on{background:#f8fafc;border-radius:12px;padding-left:8px;padding-right:8px}
+.odot{width:11px;height:11px;border-radius:999px;border:2.5px solid;margin-top:3px}
+.oi h3{margin:0 0 2px;font-size:13px;font-weight:700}
+.oi p{margin:0;color:var(--muted);font-size:11px;line-height:1.3}
+.nb{font-size:10px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:5px;vertical-align:middle}
+.divider{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;padding-top:12px;border-top:1px solid #eef2f7}
+.leg{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;font-size:12px;color:var(--muted);margin-top:14px}
+.li{display:flex;align-items:center;gap:7px}
+.sw{width:11px;height:11px;border-radius:999px;border:1px solid #122033;flex-shrink:0}
+.ptags{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+.ptag{font-size:12px;padding:5px 10px;border-radius:999px;color:#fff;font-weight:700}
+.ag{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.ac{background:#f8fafc;border:1px solid #e6edf5;border-radius:14px;padding:14px}
+.ac h3{margin:0 0 7px;font-size:14px}
+.ac textarea{width:100%;min-height:90px;border:1px solid #d8dee9;border-radius:10px;padding:9px 12px;font:inherit;resize:vertical}
+.qbanner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fcd34d;border-radius:12px;
+  padding:11px 15px;margin-bottom:14px;font-size:13px;font-weight:600;color:#92400e}
+@media(max-width:1180px){.app{grid-template-columns:1fr}.ag{grid-template-columns:1fr}svg{height:640px}}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="panel board">
+  <h1>Theme Graph v4 — Opportunities mapped</h1>
+  <div class="sub">Outer ring = opportunities (dashed lines). Inner ring = themes. ★ = prototype-ready in 90 days.</div>
+  <div class="toolbar">
+    <button onclick="autoLayout()">Reset layout</button>
+    <button class="sec" id="oppBtn" onclick="toggleOpps()">Hide opportunities</button>
+    <button class="sec" onclick="clearAll()">Show all</button>
+    <button class="sec" onclick="dlSVG()">Download SVG</button>
+  </div>
+  <div class="pillbar" id="pf"></div>
+  <svg id="g" viewBox="0 0 1300 930"></svg>
+</section>
+
+<aside class="panel side">
+  <h1 style="font-size:18px">Themes</h1>
+  <div class="sub">Click to spotlight.</div>
+  <div id="rl"></div>
+  <div class="divider">Opportunities</div>
+  <div id="ol"></div>
+  <div class="leg">
+    <div class="li"><span class="sw" style="background:var(--core)"></span>Core theme</div>
+    <div class="li"><span class="sw" style="background:var(--place)"></span>Place</div>
+    <div class="li"><span class="sw" style="background:var(--labs)"></span>Living labs</div>
+    <div class="li"><span class="sw" style="background:var(--hero)"></span>Data / HERO</div>
+    <div class="li"><span class="sw" style="background:var(--agency)"></span>Agency / privacy</div>
+    <div class="li"><span class="sw" style="background:var(--activation)"></span>Activation</div>
+  </div>
+  <div style="margin-top:14px">
+    <div class="sub" style="margin-bottom:6px">People</div>
+    <div class="ptags">
+      <span class="ptag" style="background:#8b5cf6">Stephen</span>
+      <span class="ptag" style="background:#10b981">Adam</span>
+      <span class="ptag" style="background:#3b82f6">Sam</span>
+      <span class="ptag" style="background:#f59e0b">Patrick</span>
+    </div>
+  </div>
+</aside>
+
+<section class="panel actions">
+  <h1 style="font-size:18px">Next actions</h1>
+  <div class="qbanner">💡 Test question for the room: <em>Which of these could we prototype in 90 days with a real place, real users, and a clear buyer or partner?</em></div>
+  <div class="ag">
+    <div class="ac"><h3>Chosen thread</h3><textarea placeholder="Write the one thread the group chooses"></textarea></div>
+    <div class="ac"><h3>Immediate next steps</h3><textarea placeholder="List the first 2–3 concrete moves"></textarea></div>
+    <div class="ac"><h3>Owner / who does what</h3><textarea placeholder="Capture names and follow-up"></textarea></div>
+  </div>
+</section>
+</div>
+<div class="tooltip" id="tt"></div>
+
+<script>
+const people=[
+  {id:"stephen",color:"#8b5cf6"},{id:"adam",color:"#10b981"},
+  {id:"sam",color:"#3b82f6"},{id:"patrick",color:"#f59e0b"}
+];
+
+const nodes=[
+  {id:"core",  title:"AI as a coordination layer",      label:["AI-enabled","coordination","infrastructure"],
+   x:650,y:235,r:92,color:"#7c3aed",score:20,people:["stephen","adam","sam","patrick"],
+   detail:"Strongest overlap: AI helping surface signals, match actors, and coordinate action across complexity."},
+  {id:"hero",  title:"Data infrastructure for hidden externalities",label:["HERO metrics","hidden","externalities"],
+   x:315,y:455,r:82,color:"#f59e0b",score:18,people:["stephen","patrick"],
+   detail:"Surfacing hidden environmental, social, and physiological signals that could shift decisions."},
+  {id:"labs",  title:"Making living labs investable",    label:["Living labs","institutional","testbeds"],
+   x:985,y:455,r:78,color:"#3b82f6",score:17,people:["sam","adam","stephen"],
+   detail:"Turning experimentation into credible, fundable, and repeatable models."},
+  {id:"agency",title:"Privacy, consent, and community agency",label:["Community agency","privacy","governance"],
+   x:985,y:695,r:76,color:"#ef4444",score:16,people:["stephen","sam","adam"],
+   detail:"Sensitive data raises consent, trust, control, and ownership questions."},
+  {id:"activation",title:"Investable and buildable models",label:["Investable","buildable","models"],
+   x:650,y:730,r:74,color:"#14b8a6",score:15,people:["patrick","stephen","adam"],
+   detail:"What becomes fundable, buildable, and real in practice."},
+  {id:"place", title:"Place-based regeneration",         label:["Place-based","regeneration"],
+   x:315,y:695,r:72,color:"#10b981",score:15,people:["adam","sam","stephen"],
+   detail:"Real outcomes happen in communities, campuses, and local systems rather than in abstraction."}
+];
+
+const defaultPos={core:{x:650,y:235},hero:{x:315,y:455},labs:{x:985,y:455},agency:{x:985,y:695},activation:{x:650,y:730},place:{x:315,y:695}};
+
+const edges=[
+  {from:"core",to:"hero",lbl:"reveals"},
+  {from:"core",to:"labs",lbl:"supports"},
+  {from:"core",to:"agency",lbl:"coordinates"},
+  {from:"core",to:"activation",lbl:"activates"},
+  {from:"core",to:"place",lbl:"enables"},
+  {from:"place",to:"hero",lbl:"grounded in place"},
+  {from:"labs",to:"activation",lbl:"fundable model"},
+  {from:"hero",to:"agency",lbl:"tension: privacy"},
+  {from:"labs",to:"agency",lbl:"must govern"},
+  {from:"place",to:"labs",lbl:"tested through"}
+];
+
+const opps=[
+  {id:"op-coord",  title:"Place-based coordination platform",
+   short:["Coord.","platform"],x:650,y:62,r:47,color:"#10b981",
+   connects:["core","place","activation"],nt:true,
+   detail:"A platform helping communities, institutions, government, and companies coordinate around local transition projects and investment opportunities."},
+  {id:"op-twin",   title:"Digital twin / matching infrastructure",
+   short:["Digital","twin"],x:292,y:130,r:47,color:"#7c3aed",
+   connects:["core","hero"],nt:false,
+   detail:"Builds digital twins for people, projects, communities, or ecosystems to improve matching, coordination, prediction, and resource allocation."},
+  {id:"op-studio", title:"Institution-backed systems innovation studio",
+   short:["Innovation","studio"],x:1008,y:130,r:47,color:"#3b82f6",
+   connects:["labs","core","place"],nt:false,
+   detail:"A joint model using Monash or similar institutions as a legitimizing base for testing new social, data, and investment models in the wild."},
+  {id:"op-hero",   title:"HERO metrics data venture",
+   short:["HERO","venture"],x:102,y:390,r:47,color:"#f59e0b",
+   connects:["hero","core"],nt:false,
+   detail:"A business built around surfacing hidden externalities through place-based, environmental, behavioral, or household-level data."},
+  {id:"op-wealth", title:"AI-enabled community wealth model",
+   short:["Community","wealth"],x:1198,y:390,r:47,color:"#7c3aed",
+   connects:["core","place","activation"],nt:false,
+   detail:"Helps renewable energy or infrastructure projects create longer-term local value through brokering, local participation, and community benefit design."},
+  {id:"op-coop",   title:"Older-person-led data cooperative",
+   short:["Data","co-op"],x:152,y:668,r:47,color:"#ef4444",
+   connects:["agency","hero","place"],nt:false,
+   detail:"Older people as active owners and governors of their data, with shared value flowing back to them and to the communities they are part of."},
+  {id:"op-labs",   title:"Investable living lab model",
+   short:["Living","lab model"],x:1148,y:668,r:47,color:"#3b82f6",
+   connects:["labs","activation"],nt:true,
+   detail:"A repeatable model for living labs structured as vehicles for co-investment, testing, learning, and scaling in real places."},
+  {id:"op-bath",   title:"Privacy-first bathroom intelligence",
+   short:["Bathroom","health"],x:465,y:868,r:47,color:"#ef4444",
+   connects:["agency","hero"],nt:true,
+   detail:"A social business around bathroom-based sensing supporting healthspan and early risk detection while keeping consent, privacy, and user control at the center."},
+  {id:"op-region", title:"Regional resilience / transition lab",
+   short:["Regional","resilience"],x:835,y:868,r:47,color:"#10b981",
+   connects:["place","labs","activation"],nt:false,
+   detail:"A place-based venture focused on regional Australia as a test bed for climate adaptation, energy transition, and community resilience."}
+];
+
+let AP=null,AN=null,AO=null,showO=true;
+const svg=document.getElementById("g");
+const tt=document.getElementById("tt");
+
+const fn=id=>nodes.find(n=>n.id===id);
+const fo=id=>opps.find(o=>o.id===id);
+
+function dimTheme(id){
+  if(AO){ return !fo(AO).connects.includes(id); }
+  if(AN){ if(id===AN)return false; return !edges.some(e=>(e.from===AN||e.to===AN)&&(e.from===id||e.to===id)); }
+  if(AP){ return !fn(id).people.includes(AP); }
+  return false;
+}
+function dimOpp(id){
+  const o=fo(id);
+  if(AO) return id!==AO;
+  if(AN) return !o.connects.includes(AN);
+  if(AP) return !o.connects.some(tid=>fn(tid).people.includes(AP));
+  return false;
+}
+function dimEdge(e){
+  if(AO){ const o=fo(AO); return !(o.connects.includes(e.from)&&o.connects.includes(e.to)); }
+  if(AN) return e.from!==AN&&e.to!==AN;
+  if(AP){ return !(fn(e.from).people.includes(AP)&&fn(e.to).people.includes(AP)); }
+  return false;
+}
+function dimOppEdge(oid,tid){
+  if(AO) return oid!==AO;
+  if(AN) return AN!==tid;
+  if(AP) return dimOpp(oid)||dimTheme(tid);
+  return false;
+}
+
+function ns(tag,attrs={}){
+  const el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for(const[k,v]of Object.entries(attrs)) el.setAttribute(k,v);
+  return el;
+}
+
+function draw(){
+  svg.innerHTML='<g id="oe"></g><g id="te"></g><g id="tl"></g><g id="on"></g><g id="tn"></g>';
+  const OE=svg.getElementById("oe"),TE=svg.getElementById("te"),
+        TL=svg.getElementById("tl"),ON=svg.getElementById("on"),TN=svg.getElementById("tn");
+
+  // opp edges
+  if(showO) opps.forEach(o=>o.connects.forEach(tid=>{
+    const t=fn(tid),dim=dimOppEdge(o.id,tid);
+    OE.appendChild(ns("line",{class:"opp-edge"+(dim?" dim":""),stroke:o.color,
+      x1:o.x,y1:o.y,x2:t.x,y2:t.y}));
+  }));
+
+  // theme edges
+  edges.forEach(e=>{
+    const a=fn(e.from),b=fn(e.to),dim=dimEdge(e);
+    TE.appendChild(ns("line",{class:"edge"+(dim?" dim":""),x1:a.x,y1:a.y,x2:b.x,y2:b.y}));
+    const lbl=ns("text",{class:"edge-lbl"+(dim?" dim":""),x:(a.x+b.x)/2,y:(a.y+b.y)/2-8});
+    lbl.textContent=e.lbl; TL.appendChild(lbl);
+  });
+
+  // opp nodes
+  if(showO) opps.forEach(o=>{
+    const dim=dimOpp(o.id);
+    const g=ns("g",{class:"opp-node"+(dim?" dim":"")});
+    const c=ns("circle",{cx:o.x,cy:o.y,r:o.r,fill:"white",stroke:o.color,
+      "stroke-width":o.nt?"3.5":"2.5"});
+    if(o.nt) c.setAttribute("filter",`drop-shadow(0 0 7px ${o.color}99)`);
+    g.appendChild(c);
+    o.short.forEach((ln,i)=>{
+      const t=ns("text",{x:o.x,y:o.y+(i-(o.short.length-1)/2)*15,
+        "font-size":"11","font-weight":"700","fill":o.color,
+        "text-anchor":"middle","dominant-baseline":"middle","pointer-events":"none"});
+      t.textContent=ln; g.appendChild(t);
+    });
+    if(o.nt){
+      const s=ns("text",{x:o.x+o.r-8,y:o.y-o.r+9,
+        "font-size":"13","text-anchor":"middle","dominant-baseline":"middle",
+        fill:"#f59e0b","pointer-events":"none"});
+      s.textContent="★"; g.appendChild(s);
+    }
+    g.addEventListener("mousemove",ev=>{
+      tt.style.opacity=1;tt.style.transform="translateY(0)";
+      tt.style.left=(ev.clientX+16)+"px";tt.style.top=(ev.clientY+16)+"px";
+      tt.innerHTML=(o.nt?'<div class="nt-tag">★ Near-term</div><br>':'')+
+        `<strong>${o.title}</strong><br><br>${o.detail}<br><br>`+
+        `<span style="color:#94a3b8;font-size:11px">Connects: ${o.connects.map(id=>fn(id).title.split(' ').slice(0,3).join(' ')+'…').join(', ')}</span>`;
+    });
+    g.addEventListener("mouseleave",()=>{tt.style.opacity=0;tt.style.transform="translateY(4px)"});
+    g.addEventListener("click",()=>{AO=AO===o.id?null:o.id;AN=null;rOL();rRL();draw()});
+    ON.appendChild(g);
+  });
+
+  // theme nodes
+  nodes.forEach(n=>{
+    const dim=dimTheme(n.id);
+    const g=ns("g",{class:"node"+(dim?" dim":""),style:"cursor:pointer"});
+    g.appendChild(ns("circle",{cx:n.x,cy:n.y,r:n.r,fill:n.color}));
+    n.label.forEach((ln,i)=>{
+      const t=ns("text",{x:n.x,y:n.y+(i-(n.label.length-1)/2)*18});
+      t.textContent=ln; g.appendChild(t);
+    });
+    const sb=ns("circle",{class:"score-bg",cx:n.x+n.r-10,cy:n.y-n.r+10,r:16}); g.appendChild(sb);
+    const st=ns("text",{class:"score-txt",x:n.x+n.r-10,y:n.y-n.r+11}); st.textContent=n.score; g.appendChild(st);
+    const rr=n.r+11;
+    n.people.forEach((p,i)=>{
+      const a=(-90+i*(360/n.people.length))*Math.PI/180;
+      const d=ns("circle",{cx:n.x+Math.cos(a)*rr,cy:n.y+Math.sin(a)*rr,r:5,
+        fill:people.find(x=>x.id===p).color,stroke:"#fff","stroke-width":"1.5"});
+      g.appendChild(d);
+    });
+    g.addEventListener("mousemove",ev=>{
+      tt.style.opacity=1;tt.style.transform="translateY(0)";
+      tt.style.left=(ev.clientX+16)+"px";tt.style.top=(ev.clientY+16)+"px";
+      tt.innerHTML=`<strong>${n.title}</strong><br><br>${n.detail}`;
+    });
+    g.addEventListener("mouseleave",()=>{tt.style.opacity=0;tt.style.transform="translateY(4px)"});
+    g.addEventListener("click",()=>{AN=AN===n.id?null:n.id;AO=null;rRL();rOL();draw()});
+    TN.appendChild(g);
+  });
+}
+
+function rRL(){
+  const rl=document.getElementById("rl"); rl.innerHTML="";
+  [...nodes].sort((a,b)=>b.score-a.score).forEach((n,i)=>{
+    const d=document.createElement("div");
+    d.className="ri"+(AN===n.id?" on":"");
+    d.innerHTML=`<div class="rnum">${i+1}</div><div><h3>${n.title}</h3><p>Score ${n.score} · ${n.detail}</p></div>`;
+    d.onclick=()=>{AN=AN===n.id?null:n.id;AO=null;rRL();rOL();draw()};
+    rl.appendChild(d);
+  });
+}
+function rOL(){
+  const ol=document.getElementById("ol"); ol.innerHTML="";
+  opps.forEach(o=>{
+    const d=document.createElement("div");
+    d.className="oi"+(AO===o.id?" on":"");
+    const dot=document.createElement("div");
+    dot.className="odot"; dot.style.borderColor=o.color;
+    dot.style.background=o.nt?o.color+"33":"white";
+    d.appendChild(dot);
+    const c=document.createElement("div");
+    c.innerHTML=`<h3>${o.title}${o.nt?'<span class="nb">★ 90-day</span>':''}</h3><p>${o.detail}</p>`;
+    d.appendChild(c);
+    d.onclick=()=>{AO=AO===o.id?null:o.id;AN=null;rOL();rRL();draw()};
+    ol.appendChild(d);
+  });
+}
+function rPF(){
+  const pf=document.getElementById("pf"); pf.innerHTML="";
+  [{id:"stephen",label:"Stephen"},{id:"adam",label:"Adam"},{id:"sam",label:"Sam"},{id:"patrick",label:"Patrick"}]
+  .forEach(p=>{
+    const b=document.createElement("button");
+    b.className="pill"+(AP===p.id?" on":""); b.textContent=p.label;
+    b.onclick=()=>{AP=AP===p.id?null:p.id;AN=null;AO=null;rPF();rRL();rOL();draw()};
+    pf.appendChild(b);
+  });
+}
+
+function toggleOpps(){showO=!showO;document.getElementById("oppBtn").textContent=showO?"Hide opportunities":"Show opportunities";draw()}
+function autoLayout(){nodes.forEach(n=>{const p=defaultPos[n.id];n.x=p.x;n.y=p.y});draw()}
+function clearAll(){AP=null;AN=null;AO=null;rPF();rRL();rOL();draw()}
+function dlSVG(){
+  const c=svg.cloneNode(true);c.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  const b=new Blob([new XMLSerializer().serializeToString(c)],{type:"image/svg+xml;charset=utf-8"});
+  const u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download="theme-graph-v4-opps.svg";document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+rPF();rRL();rOL();draw();
+</script>
+</body>
+</html>
